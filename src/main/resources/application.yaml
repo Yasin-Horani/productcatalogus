@@ -1,3 +1,17 @@
+server:
+  port: 8080
+
 spring:
   application:
     name: productcatalogus
+
+  datasource:
+    driver-class-name: ${DB_DriverClass}
+    username: ${DB_USERNAME}
+    url: ${DB_URL}
+    password: ${DB_PASSWORD}
+  h2:
+    console:
+      enabled: 'true'
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
