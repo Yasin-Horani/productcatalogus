@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -24,6 +25,7 @@ public class ProductController {
 
     // add new product
     @PostMapping(value= "/product")
+    @ResponseStatus(HttpStatus.CREATED)
     public ProductResDTO create(@Valid @RequestBody ProductReqDTO req) {
         log.info("POST /products - new product: {}", req.getName());
         return service.createProduct(req);
@@ -61,6 +63,7 @@ public class ProductController {
 
     // delete product by id
     @DeleteMapping(value = "/product/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
         log.info("DELETE /products/{}", id);
         service.deleteProduct(id);
