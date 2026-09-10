@@ -47,7 +47,9 @@ DB_USERNAME=sa
 DB_PASSWORD=
 ```
 
-> ⚠️ Without a `.env` file the app will **not start** — `application.yaml` expects these 4 variables.
+> ⚠️ When running locally you need these 4 values — `application.yaml` expects them.
+> They can come from a `.env` file **or** from real environment variables.
+> Running with Docker? You can skip this step: the image already sets sensible defaults (see section 9).
 
 ---
 
@@ -216,7 +218,81 @@ All errors come back in the same shape:
 
 ---
 
-## 9. Project structure
+## 9. Run with Docker 🐳
+
+You do **not** need Java or Maven installed — Docker builds everything for you.
+You also do **not** need a `.env` file: the settings are passed as environment
+variables, and the app now starts fine when `.env` is missing.
+
+### Option A — Docker Compose (easiest)
+
+```powershell
+docker compose up --build
+```
+
+Then open http://localhost:8080/swagger-ui/index.html
+
+Stop it again:
+
+```powershell
+docker compose down
+```
+
+### Option B — plain Docker
+
+```powershell
+# 1. Build the image
+docker build -t productcatalogus:latest .
+
+# 2. Run it
+docker run -d --name productcatalogus -p 8080:8080 productcatalogus:latest
+
+# 3. Watch the logs
+docker logs -f productcatalogus
+
+# 4. Stop and remove
+docker rm -f productcatalogus
+```
+
+### Configuration
+
+All values have defaults, but any of them can be overridden with `-e`:
+
+| Variable | Default |
+|----------|---------|
+| `DB_DriverClass` | `org.h2.Driver` |
+| `DB_URL` | `jdbc:h2:mem:productcatalogus` |
+| `DB_USERNAME` | `sa` |
+| `DB_PASSWORD` | *(empty)* |
+| `JAVA_OPTS` | *(empty)* |
+
+```powershell
+docker run -d --name productcatalogus -p 8080:8080 `
+  -e DB_URL="jdbc:h2:mem:mydb" `
+  -e JAVA_OPTS="-Xmx512m" `
+  productcatalogus:latest
+```
+
+Use a different **host** port if 8080 is already taken:
+
+```powershell
+docker run -d --name productcatalogus -p 8081:8080 productcatalogus:latest
+# app is now on http://localhost:8081
+```
+
+### How the image is built
+
+| Stage | Base image | What happens |
+|-------|-----------|--------------|
+| `build` | `maven:3.9-eclipse-temurin-21` | Downloads dependencies (cached layer), builds the jar |
+| `runtime` | `eclipse-temurin:21-jre-alpine` | Small JRE-only image, runs the jar as a **non-root** user |
+
+Because dependencies are cached in their own layer, rebuilding after a code
+change only re-runs the compile step and is fast.
+
+---
+
+## 10. Project structure
 
 ```
 src/main/java/com/yasin/productcatalogus/
@@ -234,7 +310,7 @@ src/main/java/com/yasin/productcatalogus/
 
 ---
 
-## 10. Testing
+## 11. Testing
 
 ```powershell
 .\mvnw.cmd test
@@ -245,12 +321,13 @@ so they never touch your development data. Reports land in `target/surefire-repo
 
 ---
 
-## 11. Troubleshooting
+## 12. Troubleshooting
 
 | Problem | Fix |
 |---------|-----|
-| App fails to start with "Could not resolve placeholder `DB_URL`" | Create the `.env` file (see step 2) |
-| `Port 8080 is already in use` | Change `server.port` in `src/main/resources/application.yaml` |
+| App fails to start with "Could not resolve placeholder `DB_URL`" | Create the `.env` file (see step 2), or pass the variables as environment variables |
+| `Port 8080 is already in use` | Change `server.port` in `src/main/resources/application.yaml`, or map another host port in Docker: `-p 8081:8080` |
+| `failed to connect to the docker API` | Docker Desktop is not running — start it first |
 | Data disappears after restart | Expected — H2 runs in memory. Use a file URL like `jdbc:h2:file:./data/catalog` to persist |
 | Wrong Java version error | Install JDK 21 and make sure `JAVA_HOME` points to it |
 | Changes not picked up | DevTools restarts automatically; if not, restart the app |
