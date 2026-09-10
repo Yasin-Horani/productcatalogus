@@ -1,0 +1,4 @@
+DB_URL=jdbc:h2:mem:productdb
+DB_USERNAME=sa
+DB_PASSWORD=1234
+DB_DriverClass=org.h2.Driver
