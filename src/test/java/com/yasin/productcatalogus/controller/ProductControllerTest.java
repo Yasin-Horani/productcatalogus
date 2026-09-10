@@ -39,6 +39,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(ProductController.class)
 class ProductControllerTest {
 
+    private static final String BASE_URL = "/products/product";
+
     private static final String VALID_BODY = """
             {"name":"Clean Code","price":60.00,"category":"BOOKS","stock":5}
             """;
@@ -62,7 +64,7 @@ class ProductControllerTest {
     }
 
     @Nested
-    @DisplayName("POST /products")
+    @DisplayName("POST /products/product")
     class Create {
 
         @Test
@@ -72,7 +74,7 @@ class ProductControllerTest {
             when(service.createProduct(any(ProductReqDTO.class))).thenReturn(response());
 
             // Act & Assert
-            mockMvc.perform(post("/products")
+            mockMvc.perform(post(BASE_URL)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(VALID_BODY))
                     .andExpect(status().isCreated())
@@ -88,7 +90,7 @@ class ProductControllerTest {
             ArgumentCaptor<ProductReqDTO> captor = ArgumentCaptor.forClass(ProductReqDTO.class);
 
             // Act
-            mockMvc.perform(post("/products")
+            mockMvc.perform(post(BASE_URL)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(VALID_BODY))
                     .andExpect(status().isCreated());
@@ -109,7 +111,7 @@ class ProductControllerTest {
             when(service.createProduct(any(ProductReqDTO.class))).thenReturn(response());
 
             // Act & Assert
-            mockMvc.perform(post("/products")
+            mockMvc.perform(post(BASE_URL)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(VALID_BODY))
                     .andExpect(status().isCreated())
@@ -127,7 +129,7 @@ class ProductControllerTest {
                     """;
 
             // Act & Assert
-            mockMvc.perform(post("/products").contentType(MediaType.APPLICATION_JSON).content(body))
+            mockMvc.perform(post(BASE_URL).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.error").value("VALIDATION_ERROR"))
                     .andExpect(jsonPath("$.messages[0]").value("name cannot be empty"));
@@ -144,7 +146,7 @@ class ProductControllerTest {
                     """;
 
             // Act & Assert
-            mockMvc.perform(post("/products").contentType(MediaType.APPLICATION_JSON).content(body))
+            mockMvc.perform(post(BASE_URL).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.messages[0]").value("price must be >= 0"));
         }
@@ -158,7 +160,7 @@ class ProductControllerTest {
                     """;
 
             // Act & Assert
-            mockMvc.perform(post("/products").contentType(MediaType.APPLICATION_JSON).content(body))
+            mockMvc.perform(post(BASE_URL).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.messages[0]").value("price must have at most 2 decimals"));
         }
@@ -170,7 +172,7 @@ class ProductControllerTest {
             String body = "{}";
 
             // Act & Assert
-            mockMvc.perform(post("/products").contentType(MediaType.APPLICATION_JSON).content(body))
+            mockMvc.perform(post(BASE_URL).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.error").value("VALIDATION_ERROR"))
                     .andExpect(jsonPath("$.messages", org.hamcrest.Matchers.hasSize(4)));
@@ -178,7 +180,7 @@ class ProductControllerTest {
     }
 
     @Nested
-    @DisplayName("GET /products/{id}")
+    @DisplayName("GET /products/product/{id}")
     class GetById {
 
         @Test
@@ -188,7 +190,7 @@ class ProductControllerTest {
             when(service.getProduct(1L)).thenReturn(response());
 
             // Act & Assert
-            mockMvc.perform(get("/products/1"))
+            mockMvc.perform(get(BASE_URL + "/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.id").value(1));
         }
@@ -200,7 +202,7 @@ class ProductControllerTest {
             when(service.getProduct(99L)).thenThrow(new ResourceNotFoundExceptionUtility("Product not found"));
 
             // Act & Assert
-            mockMvc.perform(get("/products/99"))
+            mockMvc.perform(get(BASE_URL + "/99"))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.error").value("NOT_FOUND"))
                     .andExpect(jsonPath("$.messages[0]").value("Product not found"));
@@ -208,7 +210,7 @@ class ProductControllerTest {
     }
 
     @Nested
-    @DisplayName("GET /products")
+    @DisplayName("GET /products/product")
     class GetAll {
 
         private void stubEmptyPage() {
@@ -230,7 +232,7 @@ class ProductControllerTest {
                     .thenReturn(new PagedResponseDTO<>(List.of(response()), 0, 10, 1L, 1));
 
             // Act & Assert
-            mockMvc.perform(get("/products"))
+            mockMvc.perform(get(BASE_URL))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.items[0].id").value(1))
                     .andExpect(jsonPath("$.page").value(0))
@@ -246,7 +248,7 @@ class ProductControllerTest {
             stubEmptyPage();
 
             // Act
-            mockMvc.perform(get("/products")).andExpect(status().isOk());
+            mockMvc.perform(get(BASE_URL)).andExpect(status().isOk());
 
             // Assert
             verify(service).getProducts(eq(null), eq(null), eq(null), any(Pageable.class));
@@ -263,7 +265,7 @@ class ProductControllerTest {
             stubEmptyPage();
 
             // Act
-            mockMvc.perform(get("/products")
+            mockMvc.perform(get(BASE_URL)
                             .param("category", "BOOKS")
                             .param("minPrice", "10.00")
                             .param("maxPrice", "99.99"))
@@ -284,7 +286,7 @@ class ProductControllerTest {
             stubEmptyPage();
 
             // Act
-            mockMvc.perform(get("/products")
+            mockMvc.perform(get(BASE_URL)
                             .param("page", "2")
                             .param("size", "5")
                             .param("sort", "name", "desc"))
@@ -304,7 +306,7 @@ class ProductControllerTest {
             stubEmptyPage();
 
             // Act
-            mockMvc.perform(get("/products").param("sort", "name"))
+            mockMvc.perform(get(BASE_URL).param("sort", "name"))
                     .andExpect(status().isOk());
 
             // Assert
@@ -312,17 +314,17 @@ class ProductControllerTest {
         }
 
         @Test
-        @DisplayName("returns 400 for an unknown category")
+        @DisplayName("returns 500 for an unknown category")
         void rejectsUnknownCategory() throws Exception {
             // Act & Assert
-            mockMvc.perform(get("/products").param("category", "TOYS"))
+            mockMvc.perform(get(BASE_URL).param("category", "TOYS"))
                     .andExpect(status().isInternalServerError())
                     .andExpect(jsonPath("$.error").value("INTERNAL_ERROR"));
         }
     }
 
     @Nested
-    @DisplayName("PUT /products/{id}")
+    @DisplayName("PUT /products/product/{id}")
     class Update {
 
         @Test
@@ -332,7 +334,7 @@ class ProductControllerTest {
             when(service.updateProduct(eq(1L), any(ProductReqDTO.class))).thenReturn(response());
 
             // Act & Assert
-            mockMvc.perform(put("/products/1")
+            mockMvc.perform(put(BASE_URL + "/1")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(VALID_BODY))
                     .andExpect(status().isOk())
@@ -347,7 +349,7 @@ class ProductControllerTest {
                     .thenThrow(new ResourceNotFoundExceptionUtility("Product not found"));
 
             // Act & Assert
-            mockMvc.perform(put("/products/99")
+            mockMvc.perform(put(BASE_URL + "/99")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(VALID_BODY))
                     .andExpect(status().isNotFound())
@@ -363,7 +365,7 @@ class ProductControllerTest {
                     """;
 
             // Act & Assert
-            mockMvc.perform(put("/products/1").contentType(MediaType.APPLICATION_JSON).content(body))
+            mockMvc.perform(put(BASE_URL + "/1").contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.error").value("VALIDATION_ERROR"));
 
@@ -372,14 +374,14 @@ class ProductControllerTest {
     }
 
     @Nested
-    @DisplayName("DELETE /products/{id}")
+    @DisplayName("DELETE /products/product/{id}")
     class Delete {
 
         @Test
         @DisplayName("returns 204 with an empty body")
         void deletesProduct() throws Exception {
             // Act & Assert
-            mockMvc.perform(delete("/products/1"))
+            mockMvc.perform(delete(BASE_URL + "/1"))
                     .andExpect(status().isNoContent())
                     .andExpect(content().string(""));
 
@@ -394,7 +396,7 @@ class ProductControllerTest {
                     .when(service).deleteProduct(99L);
 
             // Act & Assert
-            mockMvc.perform(delete("/products/99"))
+            mockMvc.perform(delete(BASE_URL + "/99"))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.error").value("NOT_FOUND"));
         }
