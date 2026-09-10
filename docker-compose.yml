@@ -1,0 +1,16 @@
+services:
+  app:
+    build: .
+    image: productcatalogus:latest
+    container_name: productcatalogus
+    ports:
+      - "8081:8080"
+    environment:
+      DB_DriverClass: org.h2.Driver
+      DB_URL: jdbc:h2:mem:productcatalogus
+      DB_USERNAME: sa
+      DB_PASSWORD: ""
+      SPRING_H2_CONSOLE_ENABLED: "true"
+      JAVA_OPTS: "-Dspring.h2.console.settings.web-allow-others=true"
+    restart: unless-stopped
+

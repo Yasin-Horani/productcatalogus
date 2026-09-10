@@ -1,0 +1,22 @@
+# Build output
+target/
+
+# IDE / tooling
+.idea/
+*.iml
+.vscode/
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Local secrets - values are passed as environment variables instead
+.env
+
+# Docs & docker files (not needed inside the image)
+*.md
+Dockerfile
+.dockerignore
+docker-compose.yml
+
