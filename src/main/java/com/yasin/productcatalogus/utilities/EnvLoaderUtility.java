@@ -11,7 +11,10 @@ public class EnvLoaderUtility {
     private final Dotenv dotenv;
 
     public EnvLoaderUtility() {
-        dotenv = Dotenv.load(); // Load .env automatically
+        dotenv = Dotenv.configure()
+                .ignoreIfMissing()
+                .ignoreIfMalformed()
+                .load();
     }
 
     /**
