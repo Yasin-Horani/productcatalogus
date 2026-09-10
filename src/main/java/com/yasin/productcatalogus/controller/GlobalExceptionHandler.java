@@ -8,6 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.List;
 
@@ -30,6 +31,14 @@ public class GlobalExceptionHandler {
     public ErrorResponseDTO handleNotFoundException(ResourceNotFoundExceptionUtility ex) {
         log.warn("Resource not found: {}", ex.getMessage());
         return new ErrorResponseDTO("NOT_FOUND", List.of(ex.getMessage()));
+    }
+
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponseDTO handleNoResourceFound(NoResourceFoundException ex) {
+        log.debug("No static resource: {}", ex.getResourcePath());
+        return new ErrorResponseDTO("NOT_FOUND", List.of("Resource not found"));
     }
 
     @ExceptionHandler(Exception.class)
